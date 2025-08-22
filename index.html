@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNS 센터 공지사항</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; 
+            background: #000; 
+            color: #fff; 
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+        }
+        
+        /* 헤더 스타일 */
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            position: relative;
+        }
+        
+        .header h1 { 
+            font-size: 42px; 
+            font-weight: 200; 
+            margin-bottom: 10px; 
+            letter-spacing: -1px;
+        }
+        
+        .header h1 span { 
+            color: #1E6FFF; 
+            font-weight: 400; 
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        /* 사용자 설정 바 */
+        .user-bar {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-select {
+            padding: 8px 15px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .user-select:focus {
+            outline: none;
+            border-color: #1E6FFF;
+        }
+        
+        .user-input {
+            padding: 8px 15px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .user-input:focus {
+            outline: none;
+            border-color: #1E6FFF;
+        }
+        
+        .save-btn {
+            padding: 8px 20px;
+            background: #1E6FFF;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .save-btn:hover {
+            background: #0055ff;
+        }
+        
+        .write-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: transparent;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            border-color: #1E6FFF;
+            color: #1E6FFF;
+        }
+        
+        /* 탭 네비게이션 */
+        .tab-nav {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            color: #fff;
+        }
+        
+        .tab-btn.active {
+            background: #1E6FFF;
+            color: #000;
+        }
+        
+        /* 검색 바 */
+        .search-section {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #1E6FFF;
+            box-shadow: 0 0 0 3px rgba(30, 111, 255, 0.1);
+        }
+        
+        /* 공지사항 리스트 */
+        .notice-list {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .notice-header {
+            padding: 20px 25px;
+            background: #050505;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        .notice-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #fff;
+        }
+        
+        .notice-item {
+            padding: 25px;
+            border-bottom: 1px solid #1a1a1a;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .notice-item:hover {
+            background: #0f0f0f;
+        }
+        
+        .notice-item.important {
+            background: linear-gradient(90deg, rgba(30, 111, 255, 0.05) 0%, transparent 100%);
+        }
+        
+        .notice-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .important-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: #1E6FFF;
+            color: #000;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .team-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: #FF6B1E;
+            color: #000;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .notice-date {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .notice-author {
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .notice-content-title {
+            font-size: 18px;
+            font-weight: 400;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .notice-content-preview {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        /* 확인 섹션 */
+        .check-section {
+            border-top: 1px solid #1a1a1a;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        .check-button {
+            padding: 10px 20px;
+            background: #1E6FFF;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .check-button:hover {
+            background: #0055ff;
+        }
+        
+        .check-button.checked {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .team-checks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .team-check-item {
+            background: #050505;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #1a1a1a;
+        }
+        
+        .team-name {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .team-members {
+            font-size: 13px;
+            color: #1E6FFF;
+        }
+        
+        .member-list {
+            color: #666;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+        
+        /* 글쓰기 폼 */
+        .write-form {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .write-form.show {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+        }
+        
+        .form-textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .submit-btn {
+            padding: 12px 30px;
+            background: #1E6FFF;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            padding: 12px 30px;
+            background: transparent;
+            color: #888;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        /* 알림 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #1E6FFF;
+            color: #000;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
+            animation: slideInUp 0.3s;
+            z-index: 9999;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        .toast.error {
+            background: #ff3333;
+            color: #fff;
+        }
+        
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        /* 애니메이션 */
+        @keyframes slideInUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 32px; }
+            .user-bar { flex-direction: column; align-items: stretch; }
+            .user-info { flex-direction: column; width: 100%; }
+            .user-select, .user-input { width: 100%; }
+            .write-buttons { width: 100%; }
+            .action-btn { flex: 1; }
+            .team-checks { grid-template-columns: 1fr; }
+            .tab-nav { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>SNS 센터 <span>공지사항</span></h1>
+            <div class="subtitle">Notice Board</div>
+        </div>
+        
+        <!-- 사용자 설정 바 -->
+        <div class="user-bar">
+            <div class="user-info">
+                <select class="user-select" id="userTeam">
+                    <option value="">팀 선택</option>
+                    <option value="SNS 1팀">SNS 1팀</option>
+                    <option value="SNS 2팀">SNS 2팀</option>
+                    <option value="SNS 3팀">SNS 3팀</option>
+                    <option value="SNS 4팀">SNS 4팀</option>
+                    <option value="의정부 SNS팀">의정부 SNS팀</option>
+                    <option value="관리자">관리자</option>
+                </select>
+                <input type="text" class="user-input" id="userName" placeholder="이름 입력">
+                <button class="save-btn" onclick="saveUserInfo()">저장</button>
+            </div>
+            <div class="write-buttons" id="writeButtons" style="display: none;">
+                <button class="action-btn" onclick="showWriteForm('all')">📢 전체 공지 작성</button>
+                <button class="action-btn" onclick="showWriteForm('team')">📝 파트 공지 작성</button>
+            </div>
+        </div>
+        
+        <!-- 글쓰기 폼 (전체) -->
+        <div class="write-form" id="writeFormAll">
+            <h3 style="margin-bottom: 20px;">전체 공지사항 작성</h3>
+            <div class="form-group">
+                <label class="form-label">제목</label>
+                <input type="text" class="form-input" id="noticeTitleAll" placeholder="공지사항 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label class="form-label">내용</label>
+                <textarea class="form-textarea" id="noticeContentAll" placeholder="공지사항 내용을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="isImportantAll">
+                    <label for="isImportantAll">⭐ 중요 공지사항</label>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="cancel-btn" onclick="cancelWrite('all')">취소</button>
+                <button class="submit-btn" onclick="submitNotice('all')">게시</button>
+            </div>
+        </div>
+        
+        <!-- 글쓰기 폼 (파트) -->
+        <div class="write-form" id="writeFormTeam">
+            <h3 style="margin-bottom: 20px;">파트별 공지사항 작성</h3>
+            <div class="form-group">
+                <label class="form-label">대상 팀</label>
+                <select class="form-select" id="targetTeam">
+                    <option value="">팀 선택</option>
+                    <option value="SNS 1팀">SNS 1팀</option>
+                    <option value="SNS 2팀">SNS 2팀</option>
+                    <option value="SNS 3팀">SNS 3팀</option>
+                    <option value="SNS 4팀">SNS 4팀</option>
+                    <option value="의정부 SNS팀">의정부 SNS팀</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">제목</label>
+                <input type="text" class="form-input" id="noticeTitleTeam" placeholder="공지사항 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label class="form-label">내용</label>
+                <textarea class="form-textarea" id="noticeContentTeam" placeholder="공지사항 내용을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="isImportantTeam">
+                    <label for="isImportantTeam">⭐ 중요 공지사항</label>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="cancel-btn" onclick="cancelWrite('team')">취소</button>
+                <button class="submit-btn" onclick="submitNotice('team')">게시</button>
+            </div>
+        </div>
+        
+        <!-- 탭 네비게이션 -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('all')">전체 공지사항</button>
+            <button class="tab-btn" onclick="switchTab('sns1')" id="tabSns1">SNS 1팀</button>
+            <button class="tab-btn" onclick="switchTab('sns2')" id="tabSns2">SNS 2팀</button>
+            <button class="tab-btn" onclick="switchTab('sns3')" id="tabSns3">SNS 3팀</button>
+            <button class="tab-btn" onclick="switchTab('sns4')" id="tabSns4">SNS 4팀</button>
+            <button class="tab-btn" onclick="switchTab('uijeongbu')" id="tabUijeongbu">의정부 SNS팀</button>
+        </div>
+        
+        <!-- 검색 섹션 -->
+        <div class="search-section">
+            <input type="text" class="search-input" id="searchInput" placeholder="공지사항 검색...">
+        </div>
+        
+        <!-- 공지사항 리스트 -->
+        <div class="notice-list">
+            <div class="notice-header">
+                <div class="notice-title" id="noticeListTitle">전체 공지사항 목록</div>
+            </div>
+            <div id="noticeContainer">
+                <div style="text-align: center; padding: 50px; color: #666;">
+                    공지사항을 불러오는 중...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // Supabase 설정
+        const SUPABASE_URL = 'https://bhtqjipygkawoyieidgp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJodHFqaXB5Z2thd295aWVpZGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0ODg5NjgsImV4cCI6MjA3MDA2NDk2OH0.hu2EAj9RCq436QBtfbEVF4aGOau4WWomLMDKahN4iAA';
+        
+        const { createClient } = window.supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // 전역 변수
+        let allNotices = [];
+        let currentTab = 'all';
+        let userInfo = {
+            team: localStorage.getItem('userTeam') || '',
+            name: localStorage.getItem('userName') || ''
+        };
+        
+        // 팀 매핑
+        const teamMap = {
+            'sns1': 'SNS 1팀',
+            'sns2': 'SNS 2팀',
+            'sns3': 'SNS 3팀',
+            'sns4': 'SNS 4팀',
+            'uijeongbu': '의정부 SNS팀'
+        };
+        
+        // 초기화
+        async function init() {
+            await setupTables();
+            loadUserInfo();
+            await loadNotices();
+            setupRealtimeUpdates();
+            requestNotificationPermission();
+            checkAdminAccess();
+            updateTabVisibility();
+        }
+        
+        // 테이블 설정
+        async function setupTables() {
+            // Supabase 대시보드에서 실행할 SQL:
+            /*
+            -- 공지사항 테이블 (수정)
+            CREATE TABLE IF NOT EXISTS notices (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                type VARCHAR(20) DEFAULT 'all', -- 'all' 또는 'team'
+                target_team VARCHAR(50), -- 파트별 공지인 경우 대상 팀
+                is_important BOOLEAN DEFAULT false,
+                author VARCHAR(100),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+            );
+            
+            -- 확인 기록 테이블 (동일)
+            CREATE TABLE IF NOT EXISTS notice_checks (
+                id SERIAL PRIMARY KEY,
+                notice_id INTEGER REFERENCES notices(id) ON DELETE CASCADE,
+                team VARCHAR(100),
+                name VARCHAR(100),
+                checked_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+                UNIQUE(notice_id, team, name)
+            );
+            
+            -- RLS 설정
+            ALTER TABLE notices ENABLE ROW LEVEL SECURITY;
+            ALTER TABLE notice_checks ENABLE ROW LEVEL SECURITY;
+            
+            CREATE POLICY "Anyone can read notices" ON notices FOR SELECT USING (true);
+            CREATE POLICY "Anyone can insert notices" ON notices FOR INSERT WITH CHECK (true);
+            CREATE POLICY "Anyone can read checks" ON notice_checks FOR SELECT USING (true);
+            CREATE POLICY "Anyone can insert checks" ON notice_checks FOR INSERT WITH CHECK (true);
+            */
+        }
+        
+        // 사용자 정보 로드
+        function loadUserInfo() {
+            document.getElementById('userTeam').value = userInfo.team;
+            document.getElementById('userName').value = userInfo.name;
+        }
+        
+        // 사용자 정보 저장
+        function saveUserInfo() {
+            const team = document.getElementById('userTeam').value;
+            const name = document.getElementById('userName').value.trim();
+            
+            if (!team || !name) {
+                showToast('팀과 이름을 모두 입력해주세요', 'error');
+                return;
+            }
+            
+            userInfo.team = team;
+            userInfo.name = name;
+            
+            localStorage.setItem('userTeam', userInfo.team);
+            localStorage.setItem('userName', userInfo.name);
+            
+            showToast('저장되었습니다');
+            checkAdminAccess();
+            updateTabVisibility();
+            loadNotices();
+        }
+        
+        // 관리자 권한 체크
+        function checkAdminAccess() {
+            const writeButtons = document.getElementById('writeButtons');
+            if (userInfo.team === '관리자') {
+                writeButtons.style.display = 'flex';
+            } else {
+                writeButtons.style.display = 'none';
+            }
+        }
+        
+        // 탭 표시 업데이트
+        function updateTabVisibility() {
+            // 모든 팀 탭 숨기기
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.textContent !== '전체 공지사항') {
+                    btn.style.display = 'none';
+                }
+            });
+            
+            // 사용자 팀에 해당하는 탭만 표시
+            if (userInfo.team === 'SNS 1팀') {
+                document.getElementById('tabSns1').style.display = 'block';
+            } else if (userInfo.team === 'SNS 2팀') {
+                document.getElementById('tabSns2').style.display = 'block';
+            } else if (userInfo.team === 'SNS 3팀') {
+                document.getElementById('tabSns3').style.display = 'block';
+            } else if (userInfo.team === 'SNS 4팀') {
+                document.getElementById('tabSns4').style.display = 'block';
+            } else if (userInfo.team === '의정부 SNS팀') {
+                document.getElementById('tabUijeongbu').style.display = 'block';
+            } else if (userInfo.team === '관리자') {
+                // 관리자는 모든 탭 보기
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.style.display = 'block';
+                });
+            }
+        }
+        
+        // 탭 전환
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // 탭 버튼 활성화 상태 변경
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 제목 변경
+            let title = '전체 공지사항 목록';
+            if (tab !== 'all') {
+                title = `${teamMap[tab]} 공지사항 목록`;
+            }
+            document.getElementById('noticeListTitle').textContent = title;
+            
+            loadNotices();
+        }
+        
+        // 공지사항 로드
+        async function loadNotices() {
+            try {
+                let query = supabaseClient.from('notices').select('*');
+                
+                // 탭에 따른 필터링
+                if (currentTab === 'all') {
+                    query = query.eq('type', 'all');
+                } else {
+                    const targetTeam = teamMap[currentTab];
+                    query = query.or(`type.eq.all,and(type.eq.team,target_team.eq.${targetTeam})`);
+                }
+                
+                const { data: notices, error } = await query.order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                allNotices = notices || [];
+                
+                // 검색 필터 적용
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                if (searchTerm) {
+                    allNotices = allNotices.filter(n => 
+                        n.title.toLowerCase().includes(searchTerm) ||
+                        n.content.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                // 각 공지사항의 팀별 확인 현황 가져오기
+                for (let notice of allNotices) {
+                    const { data: checks } = await supabaseClient
+                        .from('notice_checks')
+                        .select('*')
+                        .eq('notice_id', notice.id);
+                    
+                    notice.checks = checks || [];
+                    notice.userChecked = checks?.some(c => 
+                        c.team === userInfo.team && c.name === userInfo.name
+                    ) || false;
+                }
+                
+                renderNotices();
+                
+            } catch (error) {
+                console.error('공지사항 로드 실패:', error);
+                showToast('공지사항을 불러올 수 없습니다', 'error');
+            }
+        }
+        
+        // 공지사항 렌더링
+        function renderNotices() {
+            const container = document.getElementById('noticeContainer');
+            
+            if (allNotices.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        공지사항이 없습니다
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = allNotices.map(notice => {
+                // 팀별 확인 현황 계산
+                const teamChecks = {};
+                ['SNS 1팀', 'SNS 2팀', 'SNS 3팀', 'SNS 4팀', '의정부 SNS팀'].forEach(team => {
+                    teamChecks[team] = notice.checks.filter(c => c.team === team);
+                });
+                
+                return `
+                    <div class="notice-item ${notice.is_important ? 'important' : ''}">
+                        <div class="notice-meta">
+                            ${notice.is_important ? '<div class="important-badge">⭐ 중요</div>' : ''}
+                            ${notice.type === 'team' ? `<div class="team-badge">🏷️ ${notice.target_team}</div>` : ''}
+                            <div class="notice-date">${formatDate(notice.created_at)}</div>
+                            <div class="notice-author">${notice.author || '관리자'}</div>
+                        </div>
+                        <div class="notice-content-title">${notice.title}</div>
+                        <div class="notice-content-preview">${notice.content}</div>
+                        
+                        <div class="check-section">
+                            <button class="check-button ${notice.userChecked ? 'checked' : ''}" 
+                                    onclick="checkNotice(${notice.id})"
+                                    ${notice.userChecked ? 'disabled' : ''}>
+                                ${notice.userChecked ? '✓ 확인 완료' : '✓ 확인했습니다'}
+                            </button>
+                            
+                            <div class="team-checks">
+                                ${Object.entries(teamChecks).map(([team, checks]) => `
+                                    <div class="team-check-item">
+                                        <div class="team-name">${team}</div>
+                                        <div class="team-members">
+                                            확인: ${checks.length}명
+                                        </div>
+                                        ${checks.length > 0 ? `
+                                            <div class="member-list">
+                                                ${checks.slice(0, 3).map(c => c.name).join(', ')}
+                                                ${checks.length > 3 ? ` 외 ${checks.length - 3}명` : ''}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 공지사항 확인
+        async function checkNotice(noticeId) {
+            if (!userInfo.team || !userInfo.name) {
+                showToast('먼저 팀과 이름을 설정해주세요', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('notice_checks')
+                    .insert({
+                        notice_id: noticeId,
+                        team: userInfo.team,
+                        name: userInfo.name
+                    });
+                
+                if (error && error.code !== '23505') throw error;
+                
+                showToast('확인되었습니다');
+                await loadNotices();
+                
+            } catch (error) {
+                console.error('확인 실패:', error);
+                showToast('확인 처리 중 오류가 발생했습니다', 'error');
+            }
+        }
+        
+        // 글쓰기 폼 표시
+        function showWriteForm(type) {
+            if (type === 'all') {
+                document.getElementById('writeFormAll').classList.add('show');
+                document.getElementById('writeFormTeam').classList.remove('show');
+            } else {
+                document.getElementById('writeFormTeam').classList.add('show');
+                document.getElementById('writeFormAll').classList.remove('show');
+            }
+        }
+        
+        // 글쓰기 취소
+        function cancelWrite(type) {
+            if (type === 'all') {
+                document.getElementById('writeFormAll').classList.remove('show');
+                document.getElementById('noticeTitleAll').value = '';
+                document.getElementById('noticeContentAll').value = '';
+                document.getElementById('isImportantAll').checked = false;
+            } else {
+                document.getElementById('writeFormTeam').classList.remove('show');
+                document.getElementById('targetTeam').value = '';
+                document.getElementById('noticeTitleTeam').value = '';
+                document.getElementById('noticeContentTeam').value = '';
+                document.getElementById('isImportantTeam').checked = false;
+            }
+        }
+        
+        // 공지사항 제출
+        async function submitNotice(type) {
+            let title, content, isImportant, targetTeam = null;
+            
+            if (type === 'all') {
+                title = document.getElementById('noticeTitleAll').value.trim();
+                content = document.getElementById('noticeContentAll').value.trim();
+                isImportant = document.getElementById('isImportantAll').checked;
+            } else {
+                targetTeam = document.getElementById('targetTeam').value;
+                title = document.getElementById('noticeTitleTeam').value.trim();
+                content = document.getElementById('noticeContentTeam').value.trim();
+                isImportant = document.getElementById('isImportantTeam').checked;
+                
+                if (!targetTeam) {
+                    showToast('대상 팀을 선택해주세요', 'error');
+                    return;
+                }
+            }
+            
+            if (!title || !content) {
+                showToast('제목과 내용을 모두 입력해주세요', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('notices')
+                    .insert({
+                        title,
+                        content,
+                        type: type === 'all' ? 'all' : 'team',
+                        target_team: targetTeam,
+                        is_important: isImportant,
+                        author: userInfo.name || '관리자'
+                    });
+                
+                if (error) throw error;
+                
+                showToast('공지사항이 등록되었습니다');
+                cancelWrite(type);
+                await loadNotices();
+                
+                // 중요 공지사항인 경우 푸시 알림
+                if (isImportant && Notification.permission === 'granted') {
+                    const notifyTitle = type === 'team' ? `[${targetTeam}] ${title}` : title;
+                    sendNotification(notifyTitle, content);
+                }
+                
+            } catch (error) {
+                console.error('공지사항 등록 실패:', error);
+                showToast('공지사항 등록에 실패했습니다', 'error');
+            }
+        }
+        
+        // 검색
+        document.getElementById('searchInput').addEventListener('input', debounce(loadNotices, 300));
+        
+        // 알림 권한 자동 요청
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('브라우저가 알림을 지원하지 않습니다');
+                return;
+            }
+            
+            if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    console.log('알림이 활성화되었습니다');
+                }
+            }
+        }
+        
+        // 푸시 알림 보내기
+        function sendNotification(title, body) {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('SNS 센터 공지사항', {
+                    body: title,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    vibrate: [200, 100, 200],
+                    tag: 'sns-notice'
+                });
+                
+                notification.onclick = function() {
+                    window.focus();
+                    notification.close();
+                };
+            }
+        }
+        
+        // 실시간 업데이트
+        function setupRealtimeUpdates() {
+            supabaseClient
+                .channel('notices-changes')
+                .on('postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'notices' },
+                    payload => {
+                        loadNotices();
+                        
+                        // 알림 표시 조건
+                        const shouldNotify = 
+                            (payload.new.type === 'all' || 
+                             (payload.new.type === 'team' && payload.new.target_team === userInfo.team)) &&
+                            payload.new.is_important && 
+                            Notification.permission === 'granted';
+                        
+                        if (shouldNotify) {
+                            const title = payload.new.type === 'team' ? 
+                                `[${payload.new.target_team}] ${payload.new.title}` : 
+                                payload.new.title;
+                            sendNotification(title, payload.new.content);
+                        }
+                    }
+                )
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'notice_checks' },
+                    payload => {
+                        loadNotices();
+                    }
+                )
+                .subscribe();
+        }
+        
+        // 토스트 메시지
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            if (type === 'error') toast.classList.add('error');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 유틸리티 함수
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                if (diffHours === 0) {
+                    const diffMins = Math.floor(diffTime / (1000 * 60));
+                    if (diffMins === 0) return '방금 전';
+                    return `${diffMins}분 전`;
+                }
+                return `${diffHours}시간 전`;
+            } else if (diffDays === 1) {
+                return '어제';
+            } else if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                return date.toLocaleDateString('ko-KR');
+            }
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 초기화 실행
+        init();
+    </script>
+</body>
+</html>
