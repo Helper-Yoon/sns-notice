@@ -210,6 +210,30 @@
             color: #999;
         }
         
+        /* 보기 모드 토글 */
+        .view-mode-toggle {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .view-btn {
+            padding: 6px 12px;
+            background: transparent;
+            color: #bbb;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .view-btn.active {
+            background: #1E6FFF;
+            color: #000;
+            border-color: #1E6FFF;
+        }
+        
         /* 공지사항 리스트 */
         .notice-list {
             background: #0a0a0a;
@@ -222,6 +246,9 @@
             padding: 20px 25px;
             background: #050505;
             border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .notice-title {
@@ -235,6 +262,21 @@
             border-bottom: 1px solid #2a2a2a;
             transition: all 0.3s;
             position: relative;
+            border-left: 4px solid transparent;
+        }
+        
+        .notice-item.unread {
+            border-left: 4px solid #FFD700;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+        }
+        
+        .notice-item.compact {
+            padding: 15px 25px;
+        }
+        
+        .notice-item.compact .notice-content-title {
+            font-size: 16px;
+            margin-bottom: 0;
         }
         
         .notice-item:hover {
@@ -250,6 +292,23 @@
             align-items: center;
             gap: 15px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .delete-btn {
+            margin-left: auto;
+            padding: 4px 10px;
+            background: #ff3333;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background: #ff0000;
         }
         
         .important-badge {
@@ -341,6 +400,20 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .team-check-item:hover {
+            border-color: #1E6FFF;
+        }
+        
+        .unchecked-btn {
+            color: #FFD700;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
         }
         
         .team-name {
@@ -460,6 +533,80 @@
             text-align: center;
             padding: 50px;
             color: #bbb;
+        }
+        
+        /* 팀 상세 모달 */
+        .team-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .team-modal.show {
+            display: flex;
+        }
+        
+        .team-modal-content {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .team-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .team-modal-body {
+            padding: 20px;
+        }
+        
+        .team-section {
+            margin-bottom: 25px;
+        }
+        
+        .team-section h4 {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .checked-section h4 {
+            color: #1E6FFF;
+        }
+        
+        .unchecked-section h4 {
+            color: #FFD700;
+        }
+        
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .member-tag {
+            padding: 5px 10px;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #bbb;
+            text-align: center;
         }
         
         /* 애니메이션 */
@@ -586,6 +733,10 @@
         <div class="notice-list">
             <div class="notice-header">
                 <div class="notice-title" id="noticeListTitle">전체 공지사항 목록</div>
+                <div class="view-mode-toggle">
+                    <button class="view-btn active" onclick="setViewMode('full')">전체보기</button>
+                    <button class="view-btn" onclick="setViewMode('compact')">제목만</button>
+                </div>
             </div>
             <div id="noticeContainer">
                 <div style="text-align: center; padding: 50px; color: #bbb;">
@@ -598,14 +749,27 @@
     <!-- 토스트 알림 -->
     <div class="toast" id="toast"></div>
     
+    <!-- 팀 상세 모달 -->
+    <div class="team-modal" id="teamModal">
+        <div class="team-modal-content">
+            <div class="team-modal-header">
+                <h3 id="teamModalTitle">팀 확인 현황</h3>
+                <button class="modal-close" onclick="closeTeamModal()" style="background:transparent;border:1px solid #444;color:#bbb;width:30px;height:30px;border-radius:50%;cursor:pointer;">×</button>
+            </div>
+            <div class="team-modal-body" id="teamModalBody"></div>
+        </div>
+    </div>
+    
     <script>
         // 전역 변수 먼저 선언
         let allNotices = [];
         let currentTab = 'all';
+        let viewMode = 'full'; // 보기 모드 추가
         let userInfo = {
             team: localStorage.getItem('userTeam') || '',
             name: localStorage.getItem('userName') || ''
         };
+        let allTeamMembers = []; // 전체 팀원 목록
         
         // Supabase 설정
         const SUPABASE_URL = 'https://bhtqjipygkawoyieidgp.supabase.co';
@@ -824,6 +988,16 @@
             }
         }
         
+        // 보기 모드 설정
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            renderNotices();
+        }
+        
         // 공지사항 렌더링
         function renderNotices() {
             const container = document.getElementById('noticeContainer');
@@ -840,17 +1014,25 @@
             container.innerHTML = allNotices.map(notice => {
                 // 팀별 확인 현황 계산
                 const teamChecks = {};
-                ['SNS 1팀', 'SNS 2팀', 'SNS 3팀', 'SNS 4팀', '의정부 SNS팀'].forEach(team => {
+                const teams = ['SNS 1팀', 'SNS 2팀', 'SNS 3팀', 'SNS 4팀', '의정부 SNS팀'];
+                teams.forEach(team => {
                     teamChecks[team] = notice.checks.filter(c => c.team === team);
                 });
                 
+                // 미확인 여부
+                const isUnread = !notice.userChecked && userInfo.team && userInfo.name;
+                
+                // 관리자 여부
+                const isAdmin = userInfo.team === '관리자';
+                
                 return `
-                    <div class="notice-item ${notice.is_important ? 'important' : ''}">
+                    <div class="notice-item ${notice.is_important ? 'important' : ''} ${isUnread ? 'unread' : ''} ${viewMode === 'compact' ? 'compact' : ''}">
                         <div class="notice-meta">
                             ${notice.is_important ? '<div class="important-badge">⭐ 중요</div>' : ''}
                             ${notice.type === 'team' ? `<div class="team-badge">🏷️ ${notice.target_team}</div>` : ''}
                             <div class="notice-date">${formatDate(notice.created_at)}</div>
                             <div class="notice-author">${notice.author || '관리자'}</div>
+                            ${isAdmin ? `<button class="delete-btn" onclick="deleteNotice(${notice.id})">삭제</button>` : ''}
                         </div>
                         <div class="notice-content-title">${notice.title}</div>
                         <div class="notice-content-preview">${notice.content}</div>
@@ -864,7 +1046,7 @@
                             
                             <div class="team-checks">
                                 ${Object.entries(teamChecks).map(([team, checks]) => `
-                                    <div class="team-check-item">
+                                    <div class="team-check-item" onclick="showTeamDetails('${team}', ${notice.id})">
                                         <div class="team-name">${team}</div>
                                         <div class="team-members">
                                             확인: ${checks.length}명
@@ -875,6 +1057,7 @@
                                                 ${checks.length > 3 ? ` 외 ${checks.length - 3}명` : ''}
                                             </div>
                                         ` : ''}
+                                        ${isAdmin ? `<div class="unchecked-btn">미확인자 보기</div>` : ''}
                                     </div>
                                 `).join('')}
                             </div>
@@ -918,6 +1101,101 @@
                 console.error('확인 실패:', error);
                 showToast('확인 처리 중 오류가 발생했습니다', 'error');
             }
+        }
+        
+        // 공지사항 삭제
+        async function deleteNotice(noticeId) {
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            if (!supabaseClient) {
+                showToast('시스템 오류가 발생했습니다.', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('notices')
+                    .delete()
+                    .eq('id', noticeId);
+                
+                if (error) throw error;
+                
+                showToast('공지사항이 삭제되었습니다');
+                await loadNotices();
+                
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                showToast('삭제 중 오류가 발생했습니다', 'error');
+            }
+        }
+        
+        // 팀별 상세 정보 보기
+        async function showTeamDetails(team, noticeId) {
+            if (userInfo.team !== '관리자') {
+                return;
+            }
+            
+            if (!supabaseClient) {
+                showToast('시스템 오류가 발생했습니다.', 'error');
+                return;
+            }
+            
+            try {
+                // 해당 팀의 모든 멤버 가져오기 (이전에 확인한 기록이 있는 사람들)
+                const { data: allChecks } = await supabaseClient
+                    .from('notice_checks')
+                    .select('team, name')
+                    .eq('team', team);
+                
+                // 유니크한 팀원 목록 만들기
+                const uniqueMembers = [...new Set(allChecks?.map(m => m.name) || [])];
+                
+                // 이 공지를 확인한 사람들
+                const notice = allNotices.find(n => n.id === noticeId);
+                const checkedMembers = notice.checks.filter(c => c.team === team).map(c => c.name);
+                
+                // 미확인자 (기존에 다른 공지를 확인한 적이 있는 사람 중 이 공지를 확인 안한 사람)
+                const uncheckedMembers = uniqueMembers.filter(m => !checkedMembers.includes(m));
+                
+                // 모달 표시
+                document.getElementById('teamModalTitle').textContent = `${team} - "${notice.title}" 확인 현황`;
+                document.getElementById('teamModalBody').innerHTML = `
+                    <div class="team-section checked-section">
+                        <h4>✓ 확인 완료 (${checkedMembers.length}명)</h4>
+                        <div class="member-grid">
+                            ${checkedMembers.length > 0 ? 
+                                checkedMembers.map(m => `<div class="member-tag">${m}</div>`).join('') : 
+                                '<div style="color: #999;">없음</div>'}
+                        </div>
+                    </div>
+                    
+                    <div class="team-section unchecked-section">
+                        <h4>⚠ 미확인 (${uncheckedMembers.length}명)</h4>
+                        <div class="member-grid">
+                            ${uncheckedMembers.length > 0 ? 
+                                uncheckedMembers.map(m => `<div class="member-tag">${m}</div>`).join('') : 
+                                '<div style="color: #999;">전원 확인 완료</div>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #2a2a2a; color: #999; font-size: 12px;">
+                        * 미확인자는 이전에 다른 공지를 확인한 적이 있는 팀원 중 이 공지를 아직 확인하지 않은 사람입니다.
+                    </div>
+                `;
+                
+                document.getElementById('teamModal').classList.add('show');
+                
+            } catch (error) {
+                console.error('팀 정보 로드 실패:', error);
+                showToast('정보를 불러올 수 없습니다', 'error');
+            }
+        }
+        
+        // 팀 모달 닫기
+        function closeTeamModal() {
+            document.getElementById('teamModal').classList.remove('show');
         }
         
         // 글쓰기 폼 표시
@@ -1163,6 +1441,13 @@
                     `;
                 }
             }, 5000);
+            
+            // 팀 모달 외부 클릭 시 닫기
+            document.getElementById('teamModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTeamModal();
+                }
+            });
         });
     </script>
 </body>
