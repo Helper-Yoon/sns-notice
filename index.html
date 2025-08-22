@@ -42,8 +42,8 @@
         }
         
         .subtitle {
-            color: #888;
-            font-size: 14px;
+            color: #bbb;
+            font-size: 15px;
             letter-spacing: 2px;
             text-transform: uppercase;
         }
@@ -51,7 +51,7 @@
         /* 사용자 설정 바 */
         .user-bar {
             background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
@@ -71,10 +71,10 @@
         .user-select {
             padding: 8px 15px;
             background: #000;
-            border: 1px solid #333;
+            border: 1px solid #444;
             border-radius: 8px;
             color: #fff;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
         }
         
@@ -86,10 +86,10 @@
         .user-input {
             padding: 8px 15px;
             background: #000;
-            border: 1px solid #333;
+            border: 1px solid #444;
             border-radius: 8px;
             color: #fff;
-            font-size: 14px;
+            font-size: 15px;
         }
         
         .user-input:focus {
@@ -103,7 +103,7 @@
             color: #000;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -122,9 +122,9 @@
             padding: 8px 16px;
             background: transparent;
             color: #fff;
-            border: 1px solid #333;
+            border: 1px solid #444;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -137,7 +137,7 @@
         /* 탭 네비게이션 */
         .tab-nav {
             background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             padding: 10px;
             margin-bottom: 20px;
@@ -149,10 +149,10 @@
             flex: 1;
             padding: 12px;
             background: transparent;
-            color: #666;
+            color: #bbb;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
@@ -170,7 +170,7 @@
         /* 검색 바 */
         .search-section {
             background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
@@ -180,10 +180,10 @@
             width: 100%;
             padding: 12px 20px;
             background: #000;
-            border: 1px solid #333;
+            border: 1px solid #444;
             border-radius: 8px;
             color: #fff;
-            font-size: 15px;
+            font-size: 16px;
         }
         
         .search-input:focus {
@@ -192,10 +192,28 @@
             box-shadow: 0 0 0 3px rgba(30, 111, 255, 0.1);
         }
         
+        /* Placeholder 색상 */
+        ::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+        
+        ::-webkit-input-placeholder {
+            color: #999;
+        }
+        
+        ::-moz-placeholder {
+            color: #999;
+        }
+        
+        :-ms-input-placeholder {
+            color: #999;
+        }
+        
         /* 공지사항 리스트 */
         .notice-list {
             background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             overflow: hidden;
         }
@@ -203,18 +221,18 @@
         .notice-header {
             padding: 20px 25px;
             background: #050505;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
         }
         
         .notice-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 400;
             color: #fff;
         }
         
         .notice-item {
             padding: 25px;
-            border-bottom: 1px solid #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
             transition: all 0.3s;
             position: relative;
         }
@@ -242,7 +260,7 @@
             background: #1E6FFF;
             color: #000;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
         }
         
@@ -254,37 +272,37 @@
             background: #FF6B1E;
             color: #000;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
         }
         
         .notice-date {
-            color: #666;
-            font-size: 13px;
+            color: #aaa;
+            font-size: 14px;
         }
         
         .notice-author {
-            color: #888;
-            font-size: 13px;
+            color: #bbb;
+            font-size: 14px;
         }
         
         .notice-content-title {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 400;
             color: #fff;
             margin-bottom: 8px;
         }
         
         .notice-content-preview {
-            color: #888;
-            font-size: 14px;
+            color: #ccc;
+            font-size: 15px;
             line-height: 1.6;
             margin-bottom: 20px;
         }
         
         /* 확인 섹션 */
         .check-section {
-            border-top: 1px solid #1a1a1a;
+            border-top: 1px solid #2a2a2a;
             padding-top: 15px;
             margin-top: 15px;
         }
@@ -295,7 +313,7 @@
             color: #000;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 15px;
@@ -307,8 +325,8 @@
         }
         
         .check-button.checked {
-            background: #333;
-            color: #666;
+            background: #555;
+            color: #bbb;
             cursor: not-allowed;
         }
         
@@ -322,30 +340,30 @@
             background: #050505;
             padding: 10px;
             border-radius: 8px;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
         }
         
         .team-name {
-            font-size: 12px;
-            color: #888;
+            font-size: 13px;
+            color: #bbb;
             margin-bottom: 5px;
         }
         
         .team-members {
-            font-size: 13px;
+            font-size: 14px;
             color: #1E6FFF;
         }
         
         .member-list {
-            color: #666;
-            font-size: 11px;
+            color: #aaa;
+            font-size: 12px;
             margin-top: 3px;
         }
         
         /* 글쓰기 폼 */
         .write-form {
             background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 30px;
@@ -363,18 +381,18 @@
         .form-label {
             display: block;
             margin-bottom: 8px;
-            color: #888;
-            font-size: 14px;
+            color: #bbb;
+            font-size: 15px;
         }
         
         .form-input, .form-textarea, .form-select {
             width: 100%;
             padding: 12px;
             background: #000;
-            border: 1px solid #333;
+            border: 1px solid #444;
             border-radius: 8px;
             color: #fff;
-            font-size: 15px;
+            font-size: 16px;
         }
         
         .form-textarea {
@@ -407,8 +425,8 @@
         .cancel-btn {
             padding: 12px 30px;
             background: transparent;
-            color: #888;
-            border: 1px solid #333;
+            color: #ccc;
+            border: 1px solid #444;
             border-radius: 8px;
             cursor: pointer;
         }
@@ -441,7 +459,7 @@
         .empty-state {
             text-align: center;
             padding: 50px;
-            color: #666;
+            color: #bbb;
         }
         
         /* 애니메이션 */
@@ -570,7 +588,7 @@
                 <div class="notice-title" id="noticeListTitle">전체 공지사항 목록</div>
             </div>
             <div id="noticeContainer">
-                <div style="text-align: center; padding: 50px; color: #666;">
+                <div style="text-align: center; padding: 50px; color: #bbb;">
                     공지사항을 불러오는 중...
                 </div>
             </div>
@@ -1138,7 +1156,11 @@
             setTimeout(function() {
                 if (!window.supabase) {
                     clearInterval(checkSupabase);
-                    alert('Supabase 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+                    document.getElementById('noticeContainer').innerHTML = `
+                        <div style="text-align: center; padding: 50px; color: #bbb;">
+                            시스템 연결 실패. 페이지를 새로고침해주세요.
+                        </div>
+                    `;
                 }
             }, 5000);
         });
