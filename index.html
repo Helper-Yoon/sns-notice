@@ -993,8 +993,11 @@
             viewMode = mode;
             document.querySelectorAll('.view-btn').forEach(btn => {
                 btn.classList.remove('active');
+                if ((mode === 'full' && btn.textContent === '전체보기') || 
+                    (mode === 'compact' && btn.textContent === '제목만')) {
+                    btn.classList.add('active');
+                }
             });
-            event.target.classList.add('active');
             renderNotices();
         }
         
