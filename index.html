@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNS 센터 공지사항</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -581,20 +581,20 @@
     <div class="toast" id="toast"></div>
     
     <script>
-        // Supabase 설정
-        const SUPABASE_URL = 'https://bhtqjipygkawoyieidgp.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJodHFqaXB5Z2thd295aWVpZGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0ODg5NjgsImV4cCI6MjA3MDA2NDk2OH0.hu2EAj9RCq436QBtfbEVF4aGOau4WWomLMDKahN4iAA';
-        
-        const { createClient } = window.supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // 전역 변수
+        // 전역 변수 먼저 선언
         let allNotices = [];
         let currentTab = 'all';
         let userInfo = {
             team: localStorage.getItem('userTeam') || '',
             name: localStorage.getItem('userName') || ''
         };
+        
+        // Supabase 설정
+        const SUPABASE_URL = 'https://bhtqjipygkawoyieidgp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJodHFqaXB5Z2thd295aWVpZGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0ODg5NjgsImV4cCI6MjA3MDA2NDk2OH0.hu2EAj9RCq436QBtfbEVF4aGOau4WWomLMDKahN4iAA';
+        
+        // Supabase 클라이언트 초기화
+        let supabaseClient;
         
         // 팀 매핑
         const teamMap = {
@@ -607,6 +607,15 @@
         
         // 초기화
         async function init() {
+            // Supabase 클라이언트 초기화
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            } else {
+                console.error('Supabase 라이브러리를 로드할 수 없습니다.');
+                showToast('시스템 오류가 발생했습니다. 페이지를 새로고침해주세요.', 'error');
+                return;
+            }
+            
             await setupTables();
             loadUserInfo();
             await loadNotices();
@@ -614,6 +623,7 @@
             requestNotificationPermission();
             checkAdminAccess();
             updateTabVisibility();
+            setupSearchListener(); // 검색 리스너 설정
         }
         
         // 테이블 설정
@@ -736,11 +746,19 @@
             }
             document.getElementById('noticeListTitle').textContent = title;
             
-            loadNotices();
+            // Supabase 클라이언트가 초기화되었을 때만 공지사항 로드
+            if (supabaseClient) {
+                loadNotices();
+            }
         }
         
         // 공지사항 로드
         async function loadNotices() {
+            if (!supabaseClient) {
+                console.error('Supabase 클라이언트가 초기화되지 않았습니다.');
+                return;
+            }
+            
             try {
                 let query = supabaseClient.from('notices').select('*');
                 
@@ -855,6 +873,11 @@
                 return;
             }
             
+            if (!supabaseClient) {
+                showToast('시스템 오류가 발생했습니다. 페이지를 새로고침해주세요.', 'error');
+                return;
+            }
+            
             try {
                 const { error } = await supabaseClient
                     .from('notice_checks')
@@ -867,7 +890,11 @@
                 if (error && error.code !== '23505') throw error;
                 
                 showToast('확인되었습니다');
-                await loadNotices();
+                
+                // Supabase 클라이언트가 초기화되었을 때만 공지사항 로드
+                if (supabaseClient) {
+                    await loadNotices();
+                }
                 
             } catch (error) {
                 console.error('확인 실패:', error);
@@ -904,6 +931,11 @@
         
         // 공지사항 제출
         async function submitNotice(type) {
+            if (!supabaseClient) {
+                showToast('시스템 오류가 발생했습니다. 페이지를 새로고침해주세요.', 'error');
+                return;
+            }
+            
             let title, content, isImportant, targetTeam = null;
             
             if (type === 'all') {
@@ -943,7 +975,11 @@
                 
                 showToast('공지사항이 등록되었습니다');
                 cancelWrite(type);
-                await loadNotices();
+                
+                // Supabase 클라이언트가 초기화되었을 때만 공지사항 로드
+                if (supabaseClient) {
+                    await loadNotices();
+                }
                 
                 // 중요 공지사항인 경우 푸시 알림
                 if (isImportant && Notification.permission === 'granted') {
@@ -957,8 +993,13 @@
             }
         }
         
-        // 검색
-        document.getElementById('searchInput').addEventListener('input', debounce(loadNotices, 300));
+        // 검색 이벤트 리스너
+        function setupSearchListener() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput && typeof loadNotices === 'function') {
+                searchInput.addEventListener('input', debounce(loadNotices, 300));
+            }
+        }
         
         // 알림 권한 자동 요청
         async function requestNotificationPermission() {
@@ -995,12 +1036,19 @@
         
         // 실시간 업데이트
         function setupRealtimeUpdates() {
+            if (!supabaseClient) {
+                console.error('Supabase 클라이언트가 초기화되지 않았습니다.');
+                return;
+            }
+            
             supabaseClient
                 .channel('notices-changes')
                 .on('postgres_changes', 
                     { event: 'INSERT', schema: 'public', table: 'notices' },
                     payload => {
-                        loadNotices();
+                        if (supabaseClient) {
+                            loadNotices();
+                        }
                         
                         // 알림 표시 조건
                         const shouldNotify = 
@@ -1020,7 +1068,9 @@
                 .on('postgres_changes',
                     { event: '*', schema: 'public', table: 'notice_checks' },
                     payload => {
-                        loadNotices();
+                        if (supabaseClient) {
+                            loadNotices();
+                        }
                     }
                 )
                 .subscribe();
@@ -1074,8 +1124,24 @@
             };
         }
         
-        // 초기화 실행
-        init();
+        // 페이지 로드 완료 후 초기화
+        window.addEventListener('DOMContentLoaded', function() {
+            // Supabase 라이브러리 로드 대기
+            let checkSupabase = setInterval(function() {
+                if (window.supabase) {
+                    clearInterval(checkSupabase);
+                    init();
+                }
+            }, 100);
+            
+            // 5초 후에도 로드 안되면 에러 표시
+            setTimeout(function() {
+                if (!window.supabase) {
+                    clearInterval(checkSupabase);
+                    alert('Supabase 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+                }
+            }, 5000);
+        });
     </script>
 </body>
 </html>
